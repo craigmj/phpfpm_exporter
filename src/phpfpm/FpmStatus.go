@@ -9,19 +9,19 @@ import (
 
 var (
 	AcceptedConnections = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "accepted_connections_count",
+		Name: "phpfpm_acceptedconnections_count",
 		Help: "Number of connections accepted",
 	}, []string{"pool"})
 	ListenQueue = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "listen_queue",
+		Name: "phpfpm_listenqueue_size",
 		Help: "Listen queue size",
 	}, []string{"pool", "metric"})
 	ProcessesCount = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "processes_count",
+		Name: "phpfpm_processes_count",
 		Help: "Number of processes in the pool",
 	}, []string{"pool", "state"})
 	MaxChildrenReachedCount = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "max_children_reached",
+		Name: "phpfpm_maxchildren_count",
 		Help: "Maximum number of child processes reached",
 	}, []string{"pool"})
 )
@@ -56,7 +56,7 @@ func (f *FpmStatus) SetMetrics() error {
 	ListenQueue.WithLabelValues(f.Pool, "len").Set(float64(f.ListenQueueLen))
 	ProcessesCount.WithLabelValues(f.Pool, "idle").Set(float64(f.IdleProcesses))
 	ProcessesCount.WithLabelValues(f.Pool, "active").Set(float64(f.ActiveProcesses))
-	ProcessesCount.WithLabelValues(f.Pool, "total").Set(float64(f.TotalProcesses))
+	// ProcessesCount.WithLabelValues(f.Pool, "total").Set(float64(f.TotalProcesses))
 	ProcessesCount.WithLabelValues(f.Pool, "max_active").Set(float64(f.MaxActiveProcesses))
 	MaxChildrenReachedCount.WithLabelValues(f.Pool).Set(float64(f.MaxChildrenReached))
 	return nil
