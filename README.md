@@ -44,8 +44,7 @@ The number of connections accepted by the `pool`.
 
 ### Time Series labels
 
-`pool`
-: the fpm pool
+* `pool`: the fpm pool
 
 ## phpfpm_listenqueue_size
 
