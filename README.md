@@ -39,30 +39,51 @@ The exporter accepts 3 command line options
 The phpfpm_exporter exports the following metrics to prometheus:
 
 ## phpfpm_acceptedconnections_count
+
 The number of connections accepted by the `pool`.
+
 ### Time Series labels
+
 `pool` - the fpm pool
 
 ## phpfpm_listenqueue_size
+
 The size of the listen queue for each pool.
+
 ### Time Series labels
+
 `pool` - the fpm pool
+
 `metric` - one of 
+
   `current`  is the `listen queue` value from php-fpm: the number of requests in the queue of pending connections
+
   `max` is the `max listen queue` value from php-fpm: the maximum number of requests in the queue of pending connections since FPM started
+
   `len` is the `listen queue len` value from php-fpm: the size of the socket queue of pending connections
   
 ## phpfpm_processes_count
+
 The number of processes in each pool.
+
 ### Time Series labels
+
 `pool` - the fpm pool
+
 `state` - the state of the proceses. One of
+
    `idle` - the number of idle processes
+
    `active` - the number of active processes
+
    `max_active` - the maximum number of active processes in this pool since fpm started
-   Note that we don't reflect the `total processes` as reported by php-fpm, since that is simply `idle+active` and can thus be calculated.
+
+Note that we don't reflect the `total processes` as reported by php-fpm, since that is simply `idle+active` and can thus be calculated.
 
 ## phpfpm_maxchildren_count
+
 The maximum number of child processes reached in the pool.
+
 ### Time Series labels
+
 `pool` - the fpm pool
