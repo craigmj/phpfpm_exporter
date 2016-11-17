@@ -43,6 +43,8 @@ Assuming you're running prometheus on the same server as your phpfpm_exporter, y
         static_configs:
           - targets: ['127.0.0.1:9099']
 
+Obviously the targets value should match the `listen.address` command line option you've set for phpfpm_exporter.
+
 # Metrics
 
 The phpfpm_exporter exports the following metrics to prometheus:
