@@ -24,6 +24,16 @@ Start the exporter with
 
 	phpfpm_exporter
 
+## Running from Docker
+
+This service is provided as a docker image that can be run with the command
+
+    docker run --rm softonic/phpfpm_exporter \
+      -status.url=http://nginx/status?json \
+      -listen.address 0.0.0.0:9099
+
+Just change the example parameters to fit your use case.
+
 # Command Line Options
 
 The exporter accepts 3 command line options
@@ -65,14 +75,14 @@ The size of the listen queue for each pool.
 
 * `pool` the fpm pool
 
-* `metric` one of 
+* `metric` one of
 
   * `current` : the `listen queue` value from php-fpm: the number of requests in the queue of pending connections
 
   * `max` : the `max listen queue` value from php-fpm: the maximum number of requests in the queue of pending connections since FPM started
 
   * `len` : the `listen queue len` value from php-fpm: the size of the socket queue of pending connections
-  
+
 ## phpfpm_processes_count
 
 The number of processes in each pool.
