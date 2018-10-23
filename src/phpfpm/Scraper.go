@@ -6,26 +6,41 @@ import (
 	"github.com/golang/glog"
 )
 
-func scrape(url string) {
-	s, err := GetFpmStatus(url)
-	if nil != err {
-		glog.Errorf("ERROR retrieving %s: %s", url, err.Error())
+func scrape(c *Config) {
+	if c.VHosts != nil {
+		scrapeMany(c.VHosts)
 		return
 	}
-	if err := s.SetMetrics(); nil != err {
+	scrapeHost(GetFpmStatusHTTP, VirtualHost{URL: c.URL})
+}
+
+func scrapeMany(hosts *VirtualHosts) {
+	for _, host := range hosts.Hosts {
+		callback := GetFpmStatusHTTP
+		if host.FCGI != "" {
+			callback = GetFpmStatusSocket
+		}
+		// @todo needs to be in goroutine
+		scrapeHost(callback, host)
+	}
+}
+
+func scrapeHost(callback func(VirtualHost) (*FpmStatus, error), host VirtualHost) {
+	s, err := callback(host)
+	if nil != err {
+		glog.Errorf("ERROR retrieving %s: %s", host.URL, err.Error())
+		return
+	}
+	if err := s.SetMetrics(host.Name); nil != err {
 		glog.Errorf("ERROR setting metrics: %s", err.Error())
 	}
 }
 
-func StartScraper(url string, interval string) error {
-	pause, err := time.ParseDuration(interval)
-	if nil != err {
-		return err
-	}
+func StartScraper(c *Config) error {
 	go func() {
-		scrape(url)
-		for range time.Tick(pause) {
-			scrape(url)
+		scrape(c)
+		for range time.Tick(c.Interval) {
+			scrape(c)
 		}
 	}()
 	return nil
