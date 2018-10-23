@@ -1,0 +1,7 @@
+hosts:
+  - name: php7.2-vhost
+    url: /status
+    fcgi: unix:///var/run/php/php7.2-fpm.sock
+  - name: php5.6-vhost
+    url: /status
+    fcgi: unix:///var/run/php/php5.6-fpm.sock

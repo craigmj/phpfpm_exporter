@@ -1,6 +1,7 @@
 package phpfpm
 
 import (
+	"sync"
 	"time"
 
 	"github.com/golang/glog"
@@ -11,21 +12,26 @@ func scrape(c *Config) {
 		scrapeMany(c.VHosts)
 		return
 	}
-	scrapeHost(GetFpmStatusHTTP, VirtualHost{URL: c.URL})
+	scrapeHost(VirtualHost{URL: c.URL})
 }
 
 func scrapeMany(hosts *VirtualHosts) {
+	var wg sync.WaitGroup
 	for _, host := range hosts.Hosts {
-		callback := GetFpmStatusHTTP
-		if host.FCGI != "" {
-			callback = GetFpmStatusSocket
-		}
-		// @todo needs to be in goroutine
-		scrapeHost(callback, host)
+		wg.Add(1)
+		go func(host VirtualHost) {
+			defer wg.Done()
+			scrapeHost(host)
+		}(host)
 	}
+	wg.Wait()
 }
 
-func scrapeHost(callback func(VirtualHost) (*FpmStatus, error), host VirtualHost) {
+func scrapeHost(host VirtualHost) {
+	callback := GetFpmStatusHTTP
+	if host.FCGI != "" {
+		callback = GetFpmStatusSocket
+	}
 	s, err := callback(host)
 	if nil != err {
 		glog.Errorf("ERROR retrieving %s: %s", host.URL, err.Error())

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
@@ -15,26 +17,30 @@ var (
 	AcceptedConnections = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "phpfpm_acceptedconnections_count",
 		Help: "Number of connections accepted",
-	}, []string{"pool"})
+	}, []string{"app", "pool"})
 	ListenQueue = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "phpfpm_listenqueue_size",
 		Help: "Listen queue size",
-	}, []string{"pool", "metric"})
+	}, []string{"app", "pool", "metric"})
 	ProcessesCount = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "phpfpm_processes_count",
 		Help: "Number of processes in the pool",
-	}, []string{"pool", "state"})
+	}, []string{"app", "pool", "state"})
 	MaxChildrenReachedCount = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "phpfpm_maxchildren_count",
 		Help: "Maximum number of child processes reached",
-	}, []string{"pool"})
+	}, []string{"app", "pool"})
 )
+
+var FCGIDialTimeout = time.Duration(time.Second * 5)
 
 func init() {
 	prometheus.MustRegister(AcceptedConnections)
 	prometheus.MustRegister(ListenQueue)
 	prometheus.MustRegister(ProcessesCount)
 	prometheus.MustRegister(MaxChildrenReachedCount)
+	prometheus.Unregister(prometheus.NewProcessCollector(os.Getpid(), ""))
+	prometheus.Unregister(prometheus.NewGoCollector())
 }
 
 type FpmStatus struct {
@@ -91,10 +97,11 @@ func GetFpmStatusSocket(h VirtualHost) (*FpmStatus, error) {
 	if err != nil {
 		return nil, errors.WithMessage(err, "parsing FCGI socket path")
 	}
-	fcgi, err := fcgiclient.Dial(u.Scheme, u.Path)
+	fcgi, err := fcgiclient.DialTimeout(u.Scheme, u.Path, FCGIDialTimeout)
 	if err != nil {
 		return nil, errors.WithMessage(err, "dialing FCGI socket")
 	}
+	defer fcgi.Close()
 	env := map[string]string{
 		"SCRIPT_FILENAME": h.URL,
 		"SCRIPT_NAME":     h.URL,
