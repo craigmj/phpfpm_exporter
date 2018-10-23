@@ -65,14 +65,14 @@ The size of the listen queue for each pool.
 
 * `pool` the fpm pool
 
-* `metric` one of 
+* `metric` one of
 
   * `current` : the `listen queue` value from php-fpm: the number of requests in the queue of pending connections
 
   * `max` : the `max listen queue` value from php-fpm: the maximum number of requests in the queue of pending connections since FPM started
 
   * `len` : the `listen queue len` value from php-fpm: the size of the socket queue of pending connections
-  
+
 ## phpfpm_processes_count
 
 The number of processes in each pool.
