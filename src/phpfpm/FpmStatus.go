@@ -14,35 +14,42 @@ import (
 )
 
 var (
-	AcceptedConnections = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+	acceptedConnections = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "phpfpm_acceptedconnections_count",
 		Help: "Number of connections accepted",
 	}, []string{"app", "pool"})
-	ListenQueue = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+	listenQueue = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "phpfpm_listenqueue_size",
 		Help: "Listen queue size",
 	}, []string{"app", "pool", "metric"})
-	ProcessesCount = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+	processesCount = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "phpfpm_processes_count",
 		Help: "Number of processes in the pool",
 	}, []string{"app", "pool", "state"})
-	MaxChildrenReachedCount = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+	maxChildrenReachedCount = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "phpfpm_maxchildren_count",
 		Help: "Maximum number of child processes reached",
 	}, []string{"app", "pool"})
+	slowRequests = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "phpfpm_slow_requests",
+		Help: "Slow requests",
+	}, []string{"app", "pool"})
 )
 
-var FCGIDialTimeout = time.Duration(time.Second * 5)
+// FCGIDialTimeout holds the max timeout for socket connections
+const FCGIDialTimeout = time.Duration(time.Second * 5)
 
 func init() {
-	prometheus.MustRegister(AcceptedConnections)
-	prometheus.MustRegister(ListenQueue)
-	prometheus.MustRegister(ProcessesCount)
-	prometheus.MustRegister(MaxChildrenReachedCount)
+	prometheus.MustRegister(acceptedConnections)
+	prometheus.MustRegister(listenQueue)
+	prometheus.MustRegister(processesCount)
+	prometheus.MustRegister(maxChildrenReachedCount)
+	prometheus.MustRegister(slowRequests)
 	prometheus.Unregister(prometheus.NewProcessCollector(os.Getpid(), ""))
 	prometheus.Unregister(prometheus.NewGoCollector())
 }
 
+// FpmStatus represents the JSON data exported by php-fpm
 type FpmStatus struct {
 	Pool               string `json:"pool"`
 	ProcessManager     string `json:"process manager"`
@@ -57,22 +64,27 @@ type FpmStatus struct {
 	TotalProcesses     int64  `json:"total processes"`
 	MaxActiveProcesses int64  `json:"max active processes"`
 	MaxChildrenReached int64  `json:"max children reached"`
+	SlowRequests       int64  `json:"slow requests"`
 }
 
+// SetMetrics assigns a new set of metrics for the given host for export to
+// Prometheus.
 func (f *FpmStatus) SetMetrics(host string) error {
-	AcceptedConnections.WithLabelValues(host, f.Pool).Set(float64(f.AcceptedConn))
-	ListenQueue.WithLabelValues(host, f.Pool, "current").Set(float64(f.ListenQueue))
-	ListenQueue.WithLabelValues(host, f.Pool, "max").Set(float64(f.MaxListenQueue))
-	ListenQueue.WithLabelValues(host, f.Pool, "len").Set(float64(f.ListenQueueLen))
-	ProcessesCount.WithLabelValues(host, f.Pool, "idle").Set(float64(f.IdleProcesses))
-	ProcessesCount.WithLabelValues(host, f.Pool, "active").Set(float64(f.ActiveProcesses))
-	// ProcessesCount.WithLabelValues(host, f.Pool, "total").Set(float64(f.TotalProcesses))
-	ProcessesCount.WithLabelValues(host, f.Pool, "max_active").Set(float64(f.MaxActiveProcesses))
-	MaxChildrenReachedCount.WithLabelValues(host, f.Pool).Set(float64(f.MaxChildrenReached))
+	acceptedConnections.WithLabelValues(host, f.Pool).Set(float64(f.AcceptedConn))
+	listenQueue.WithLabelValues(host, f.Pool, "current").Set(float64(f.ListenQueue))
+	listenQueue.WithLabelValues(host, f.Pool, "max").Set(float64(f.MaxListenQueue))
+	listenQueue.WithLabelValues(host, f.Pool, "len").Set(float64(f.ListenQueueLen))
+	processesCount.WithLabelValues(host, f.Pool, "idle").Set(float64(f.IdleProcesses))
+	processesCount.WithLabelValues(host, f.Pool, "active").Set(float64(f.ActiveProcesses))
+	processesCount.WithLabelValues(host, f.Pool, "total").Set(float64(f.TotalProcesses))
+	processesCount.WithLabelValues(host, f.Pool, "max_active").Set(float64(f.MaxActiveProcesses))
+	maxChildrenReachedCount.WithLabelValues(host, f.Pool).Set(float64(f.MaxChildrenReached))
+	slowRequests.WithLabelValues(host, f.Pool).Set(float64(f.SlowRequests))
 	return nil
 }
 
-// GetFpmStatus retrieves the FpmStatus from the server
+// GetFpmStatusHTTP retrieves the FpmStatus from the server using the HTTP
+// protocal
 func GetFpmStatusHTTP(h VirtualHost) (*FpmStatus, error) {
 	res, err := http.Get(h.URL)
 	if nil != err {
@@ -89,6 +101,8 @@ func GetFpmStatusHTTP(h VirtualHost) (*FpmStatus, error) {
 	return &status, nil
 }
 
+// GetFpmStatusSocket retrieves the FpmStatus from the server using the FCGI
+// socket protocal
 func GetFpmStatusSocket(h VirtualHost) (*FpmStatus, error) {
 	if h.URL == "" {
 		h.URL = "/status"
