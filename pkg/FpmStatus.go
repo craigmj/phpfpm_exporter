@@ -17,23 +17,23 @@ var (
 	acceptedConnections = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "phpfpm_acceptedconnections_count",
 		Help: "Number of connections accepted",
-	}, []string{"app", "pool"})
+	}, []string{"pool"})
 	listenQueue = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "phpfpm_listenqueue_size",
 		Help: "Listen queue size",
-	}, []string{"app", "pool", "metric"})
+	}, []string{"pool", "metric"})
 	processesCount = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "phpfpm_processes_count",
 		Help: "Number of processes in the pool",
-	}, []string{"app", "pool", "state"})
+	}, []string{"pool", "state"})
 	maxChildrenReachedCount = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "phpfpm_maxchildren_count",
 		Help: "Maximum number of child processes reached",
-	}, []string{"app", "pool"})
+	}, []string{"pool"})
 	slowRequests = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "phpfpm_slow_requests",
 		Help: "Slow requests",
-	}, []string{"app", "pool"})
+	}, []string{"pool"})
 )
 
 // FCGIDialTimeout holds the max timeout for socket connections
@@ -69,17 +69,17 @@ type FpmStatus struct {
 
 // SetMetrics assigns a new set of metrics for the given host for export to
 // Prometheus.
-func (f *FpmStatus) SetMetrics(host string) error {
-	acceptedConnections.WithLabelValues(host, f.Pool).Set(float64(f.AcceptedConn))
-	listenQueue.WithLabelValues(host, f.Pool, "current").Set(float64(f.ListenQueue))
-	listenQueue.WithLabelValues(host, f.Pool, "max").Set(float64(f.MaxListenQueue))
-	listenQueue.WithLabelValues(host, f.Pool, "len").Set(float64(f.ListenQueueLen))
-	processesCount.WithLabelValues(host, f.Pool, "idle").Set(float64(f.IdleProcesses))
-	processesCount.WithLabelValues(host, f.Pool, "active").Set(float64(f.ActiveProcesses))
-	processesCount.WithLabelValues(host, f.Pool, "total").Set(float64(f.TotalProcesses))
-	processesCount.WithLabelValues(host, f.Pool, "max_active").Set(float64(f.MaxActiveProcesses))
-	maxChildrenReachedCount.WithLabelValues(host, f.Pool).Set(float64(f.MaxChildrenReached))
-	slowRequests.WithLabelValues(host, f.Pool).Set(float64(f.SlowRequests))
+func (f *FpmStatus) SetMetrics() error {
+	acceptedConnections.WithLabelValues(f.Pool).Set(float64(f.AcceptedConn))
+	listenQueue.WithLabelValues(f.Pool, "current").Set(float64(f.ListenQueue))
+	listenQueue.WithLabelValues(f.Pool, "max").Set(float64(f.MaxListenQueue))
+	listenQueue.WithLabelValues(f.Pool, "len").Set(float64(f.ListenQueueLen))
+	processesCount.WithLabelValues(f.Pool, "idle").Set(float64(f.IdleProcesses))
+	processesCount.WithLabelValues(f.Pool, "active").Set(float64(f.ActiveProcesses))
+	processesCount.WithLabelValues(f.Pool, "total").Set(float64(f.TotalProcesses))
+	processesCount.WithLabelValues(f.Pool, "max_active").Set(float64(f.MaxActiveProcesses))
+	maxChildrenReachedCount.WithLabelValues(f.Pool).Set(float64(f.MaxChildrenReached))
+	slowRequests.WithLabelValues(f.Pool).Set(float64(f.SlowRequests))
 	return nil
 }
 

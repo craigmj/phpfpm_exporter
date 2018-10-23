@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 
-	// @todo this should be a proper importable path
 	phpfpm "github.com/rthornton128/phpfpm_exporter/pkg"
 )
 

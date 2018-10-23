@@ -37,7 +37,7 @@ func scrapeHost(host VirtualHost) {
 		glog.Errorf("ERROR retrieving %s: %s", host.URL, err.Error())
 		return
 	}
-	if err := s.SetMetrics(host.Name); nil != err {
+	if err := s.SetMetrics(); nil != err {
 		glog.Errorf("ERROR setting metrics: %s", err.Error())
 	}
 }

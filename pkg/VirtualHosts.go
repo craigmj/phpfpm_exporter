@@ -9,9 +9,6 @@ import (
 
 // VirtualHost contains fields representing a virtual host on a server
 type VirtualHost struct {
-	// Name associated with the host
-	Name string
-
 	// In the case of a unix socket host, this should contain the correct
 	// path to `/status`. In the case of an HTTP connect, it could contain
 	// the full path including the host and schema:
