@@ -4,7 +4,7 @@ import (
 	"flag"
 
 	// @todo this should be a proper importable path
-	"github.com/rthornton128/phpfpm_exporter/src/phpfpm"
+	phpfpm "github.com/rthornton128/phpfpm_exporter/pkg"
 )
 
 func main() {
