@@ -28,7 +28,7 @@ type VirtualHost struct {
 }
 
 // VirtualHosts represents a collection of virtual hosts which should be
-// monitored.
+// monitored
 type VirtualHosts struct {
 	Hosts []VirtualHost
 }
