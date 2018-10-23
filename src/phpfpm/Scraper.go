@@ -42,6 +42,8 @@ func scrapeHost(host VirtualHost) {
 	}
 }
 
+// StartScraper being the scraping process using the supplied configuration.
+// Config must not be nil
 func StartScraper(c *Config) error {
 	go func() {
 		scrape(c)
