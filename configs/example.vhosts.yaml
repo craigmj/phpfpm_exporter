@@ -1,0 +1,4 @@
+hosts:
+  - url: /status
+    fcgi: unix:///var/run/php/php7.2-fpm.sock
+  - fcgi: unix:///var/run/php/php5.6-fpm.sock

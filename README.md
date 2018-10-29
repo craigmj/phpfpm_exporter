@@ -44,6 +44,8 @@ The exporter accepts 3 command line options
 
 * `scrape.interval`	The interval between scraps of the php-fpm status. Defaults to `5m`. You can set any string value that can be parsed by Go's Duration class: https://golang.org/pkg/time/#ParseDuration
 
+* `config.path` A path to a YAML configuration file that contains a list of vhosts to monitor. See: `configs/example.vhosts.yaml` for the proper format.
+
 # Configuring Prometheus
 
 Assuming you're running prometheus on the same server as your phpfpm_exporter, you need to add to your `scrape_configs` in `prometheus.yml`:
