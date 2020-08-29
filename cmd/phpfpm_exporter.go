@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 
-	phpfpm "github.com/craigm/phpfpm_exporter/pkg"
+	phpfpm "github.com/craigmj/phpfpm_exporter/pkg"
 )
 
 func main() {
